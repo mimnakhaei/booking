@@ -23,10 +23,10 @@ def get_all_hotels(user: User = Depends(authenticate(Role.normal)), db: Session 
     return res
 
 
-@router.get("/user", response_model=List[HotelDisplay])
-def get_all_user_hotels(user: User = Depends(authenticate(Role.normal)), db: Session = Depends(get_db)):
+@router.get("/manager", response_model=List[HotelDisplay])
+def get_all_manager_hotels(manager: User = Depends(authenticate(Role.manager)), db: Session = Depends(get_db)):
     res: List[HotelDisplay] = []
-    for hotel in hotel_api.get_hotels_by_user_id(db, user.id):  # type: ignore
+    for hotel in hotel_api.get_hotels_by_user_id(db, manager.id):  # type: ignore
         item = create_hotel_display(hotel)
         res.append(item)
 
@@ -58,6 +58,11 @@ def update_hotel(hotel_id: int, hotel: HotelBodyInput, manager: User = Depends(a
 
 
 @router.delete("/{hotel_id}")
-def delete_hotel(hotel_id: int, db: Session = Depends(get_db)):
+def delete_hotel(hotel_id: int, manager: User = Depends(authenticate(Role.manager)), db: Session = Depends(get_db)):
+    hotel = hotel_api.get_hotel(db, hotel_id)
+    if not hotel:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Hotel not found")
+    if hotel.user_id != manager.id:  # type: ignore
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You are not authorized to delete this hotel")
     hotel_api.delete_hotel(db, hotel_id)
     return {"detail": "Hotel deleted successfully"}
