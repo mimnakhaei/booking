@@ -1,12 +1,12 @@
 # db/db_users.py
 from sqlalchemy.orm import Session
-from schema import UserCreate, UserSignup
+from schema import UserBase, UserSignup
 from database.hash import Hash
 
 from .user import User
 
 
-def create_user(db: Session, user: UserCreate | UserSignup):
+def create_user(db: Session, user: UserBase | UserSignup):
     hashed_password = Hash.bcrypt(user.password)  # Hashing the password
     db_user = User(username=user.username, email=user.email, password=hashed_password)
     db.add(db_user)
@@ -31,12 +31,13 @@ def get_all_users(db: Session):
     return db.query(User).all()
 
 
-def update_user(db: Session, user_id: int, user: UserCreate) -> User:
+def update_user(db: Session, user_id: int, user: UserBase) -> User:
     db_user = get_user(db, user_id)
     if db_user:
         db_user.username = user.username  # type: ignore
         db_user.email = user.email  # type: ignore
-        db_user.hashed_password = user.password  # Ideally, hash the password before saving
+        hashed_password = Hash.bcrypt(user.password)  # Hashing the password
+        db_user.password = hashed_password  # type: ignore
         db.commit()
         db.refresh(db_user)
     return db_user

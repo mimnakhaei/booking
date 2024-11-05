@@ -1,26 +1,40 @@
 from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.orm import Session
-from database.init.db import get_db
-from schema import UserCreate, UserDisplay
 from database.hash import Hash
-from database.model.user.api import User
 
-router = APIRouter(prefix="/users", tags=["Users"])
+from database.model.user.api import User, create_user, update_user
 
+from schema import UserBase, UserDisplay
+from database.init.db import get_db
+from auth import authenticate, Role
 
-@router.post("/", response_model=UserDisplay)
-def create_user(request: UserCreate, db: Session = Depends(get_db)):
-    hashed_password = Hash.bcrypt(request.password)
-    new_user = User(username=request.username, email=request.email, password=hashed_password)
-    db.add(new_user)
-    db.commit()
-    db.refresh(new_user)
-    return new_user
+router = APIRouter(prefix="/user", tags=["Users"])
+
+# region normal user endpoints
 
 
-@router.get("/{id}", response_model=UserDisplay)
-def get_user(id: int, db: Session = Depends(get_db)):
-    user = db.query(User).filter(User.id == id).first()
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-    return user
+@router.get("/me", response_model=UserBase)
+def get_me(user: User = Depends(authenticate(Role.normal))):
+    return UserBase(username=user.username, email=user.email, password=user.password)  # type: ignore
+
+
+@router.post("/me", response_model=UserBase)
+def update_me(request: UserBase, user: User = Depends(authenticate(Role.normal)), db: Session = Depends(get_db)):
+
+    update_user(db, user.id, request)  # type: ignore
+
+    return UserBase(username=user.username, email=user.email, password=user.password)  # type: ignore
+
+
+@router.get("/bookings", response_model=None)  # TODO: choose response model
+def get_bookings(user: User = Depends(authenticate(Role.normal))):
+    # TODO: implement
+    return None
+
+
+@router.delete("/bookings/{booking_id}", response_model=None)  # TODO: choose response model
+def delete_booking(booking_id: int, user: User = Depends(authenticate(Role.normal))):
+    # TODO: implement
+    return None
+
+# endregion

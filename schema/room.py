@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 from typing import List, Optional
 from .review import ReviewDisplay
-from .user import UserBase
+from .user import UserMeta
 
 
 class RoomBase(BaseModel):
@@ -18,7 +18,7 @@ class RoomDisplay(RoomBase):
     id: int
     hotel_id: int
     reviews: List[ReviewDisplay] = []
-    user: Optional[UserBase] = None  # Allow user to be None
+    user: Optional[UserMeta] = None  # Allow user to be None
 
     class Config:
         orm_mode = True
