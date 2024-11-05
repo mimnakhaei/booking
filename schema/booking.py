@@ -35,14 +35,16 @@ def create_booking_display(booking) -> BookingDisplay:
     )
 
     # Create RoomDisplay model with reviews
-    room_item = RoomDisplay(
-        id=booking.room.id,
-        type=booking.room.type,
-        room_number=booking.room.room_number,
-        availability=booking.room.availability,
-        hotel_id=booking.room.hotel_id,
-        reviews=create_review_display_list(booking.room.reviews)
-    )
+    room_item = None
+    if booking.room:
+        room_item = RoomDisplay(
+            id=booking.room.id,
+            type=booking.room.type,
+            room_number=booking.room.room_number,
+            availability=booking.room.availability,
+            hotel_id=booking.room.hotel_id,
+            reviews=create_review_display_list(booking.room.reviews)
+        )
 
     # Create BookingDisplay model
     return BookingDisplay(
@@ -50,5 +52,5 @@ def create_booking_display(booking) -> BookingDisplay:
         check_in=booking.check_in,  # type: ignore
         check_out=booking.check_out,  # type: ignore
         user=user_item,
-        room=room_item
+        room=room_item  # type: ignore
     )

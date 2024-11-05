@@ -11,7 +11,7 @@ class UserBase(UserMeta):
     password: str
 
 
-# It's the same as UserCreate, but it's used for signup
+# It's the same as UserBase, but it's used for signup
 class UserSignup(UserBase):
     pass
 
