@@ -7,16 +7,20 @@ from .user import UserDisplay, create_user_display
 from .room import RoomDisplay, create_room_display
 
 
-class HotelBase(BaseModel):
+class HotelMeta(BaseModel):
     name: str
     address: str
 
 
-class HotelCreate(HotelBase):
+class HotelBase(HotelMeta):
     user_id: int
 
 
-class HotelDisplay(HotelBase):
+class HotelBodyInput(HotelMeta):
+    pass
+
+
+class HotelDisplay(HotelMeta):
     id: int
     user: UserDisplay  # Owner
     rooms: List[RoomDisplay] = []
