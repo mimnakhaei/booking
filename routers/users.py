@@ -20,8 +20,7 @@ def get_me(user: User = Depends(authenticate(Role.normal))):
 
 @router.post("/me", response_model=UserBase)
 def update_me(request: UserBase, user: User = Depends(authenticate(Role.normal)), db: Session = Depends(get_db)):
-
-    update_user(db, user.id, request)  # type: ignore
+    user = update_user(db, user.id, request)  # type: ignore
 
     return UserBase(username=user.username, email=user.email, password=user.password)  # type: ignore
 
