@@ -1,4 +1,5 @@
 import base64
+from hashlib import sha256
 from starlette.middleware.base import BaseHTTPMiddleware
 from fastapi import HTTPException, Request
 from fastapi.security import OAuth2PasswordBearer
@@ -7,6 +8,7 @@ from enum import Enum
 
 from database.model.user.api import get_user
 from database.model.user import User
+from database.model.token.api import is_token_revoked
 from database.init import get_db_directly
 from config.config import settings
 
@@ -15,9 +17,8 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="signin")
 
 public_endpoints = ["/", "/signup", "/signin", "/docs", "/openapi.json"]
 
+
 # Enum for User Roles
-
-
 class Role(str, Enum):
     normal = "normal"
     manager = "manager"
@@ -43,7 +44,12 @@ class AuthenticationMiddleware(BaseHTTPMiddleware):
                 # Decode the token to get claims (it checks the signature and expiration too)
                 claims = jwt.decode(decrypted_token, settings.JWT_SECRET_KEY, algorithms=["HS256"])  # type: ignore
                 with get_db_directly() as db:
+                    # Check if the token is revoked
+                    if is_token_revoked(db, claims["jti"]):
+                        raise HTTPException(status_code=401, detail="Token revoked")
+
                     request.state.user = get_user(db, claims["user_id"])
+                    request.state.jti = claims["jti"]
         except Exception as e:
             raise HTTPException(status_code=401, detail="Invalid token")
         response = await call_next(request)
