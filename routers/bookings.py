@@ -17,7 +17,7 @@ router = APIRouter(
 
 
 @router.get("/", response_model=List[BookingDisplay])
-def get_all_bookings(user: User = Depends(authenticate(Role.manager)), db: Session = Depends(get_db)):
+def get_all_bookings(manager: User = Depends(authenticate(Role.manager)), db: Session = Depends(get_db)):
     """Get all bookings. Only accessible by managers."""
     return [create_booking_display(item) for item in booking_api.get_all_bookings(db)]
 
