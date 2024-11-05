@@ -1,7 +1,5 @@
-from jwt import ExpiredSignatureError, decode as jwt_decode
 from fastapi import Request, HTTPException
 import base64
-from hashlib import sha256
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import JSONResponse
 from fastapi import HTTPException, Request
