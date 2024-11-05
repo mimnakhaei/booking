@@ -22,7 +22,12 @@ def get_all_bookings(db: Session) -> list[Booking]:
 
 
 def get_bookings_by_user_id(db: Session, user_id: int) -> list[Booking]:
-    return db.query(Booking).options(joinedload(Booking.user), joinedload(Booking.room).joinedload(Room.reviews).joinedload(Review.user)).filter(Booking.user_id == user_id).all()
+    return db.query(Booking).options(
+        joinedload(Booking.user),
+        joinedload(Booking.room),
+        joinedload(Booking.room).joinedload(Room.reviews),
+        joinedload(Booking.room).joinedload(Room.reviews).joinedload(Review.user)
+    ).filter(Booking.user_id == user_id).all()
 
 
 def delete_booking(db: Session, booking_id: int):
