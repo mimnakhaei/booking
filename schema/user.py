@@ -36,3 +36,13 @@ class UserDisplay(UserBase):
 
     class Config:
         orm_mode = True
+
+
+def create_user_display(user) -> UserDisplay:
+    # Create UserDisplay model
+    return UserDisplay(
+        id=user.id,
+        username=user.username,
+        email=user.email,
+        password=user.password  # Consider if you need to expose the password
+    )
