@@ -66,7 +66,7 @@ def signin(request: UserSignIn, db: Session = Depends(get_db)):
     claims = {
         "user_id": user.id,
         "exp": datetime.now(timezone.utc) + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRY_TIME_MINUTES),
-        "jti": uuid.uuid4()
+        "jti": str(uuid.uuid4())
     }
     # Create the JWT
     jwt_token = jwt.encode(claims, settings.JWT_SECRET_KEY, algorithm="HS256")
@@ -86,7 +86,7 @@ def signout(request: Request, user: User = Depends(authenticate()), db: Session 
     jti = request.state.jti
     add_revoke_token(db, jti)
 
-    return {"message": "You have successfully signed out :(((((. You no longer have access with your access token :)))))"}
+    return {"message": "You have successfully signed out. You no longer have access with your access token :((((("}
 
 
 # Include isolated routers(endpoints)
