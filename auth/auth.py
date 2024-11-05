@@ -36,7 +36,7 @@ class AuthenticationMiddleware(BaseHTTPMiddleware):
             token = await oauth2_scheme(request)  # Use oauth2_scheme to extract token
             if token:
                 # Decrypt the token sent by the client
-                decrypted_token = jwe.decrypt(base64.urlsafe_b64decode(token), settings.JWE_SECRET_KEY)
+                decrypted_token = jwe.decrypt(base64.urlsafe_b64decode(token), settings.JWE_SECRET_KEY.encode())
                 if not decrypted_token:
                     raise HTTPException(status_code=401, detail="Invalid token")
 

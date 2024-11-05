@@ -1,6 +1,6 @@
 import base64
 from fastapi import FastAPI, Depends, HTTPException
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from sqlalchemy.orm import Session
 from jose import jwt, jwe
 
@@ -61,7 +61,7 @@ def signin(request: UserSignIn, db: Session = Depends(get_db)):
     # This is the data that we want to store in the token (it will be encrypted ofcourse)
     claims = {
         "user_id": user.id,
-        "exp": datetime.utcnow() + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRY_TIME_MINUTES)
+        "exp": datetime.now(timezone.utc) + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRY_TIME_MINUTES)
     }
     # Create the JWT
     jwt_token = jwt.encode(claims, settings.JWT_SECRET_KEY, algorithm="HS256")
