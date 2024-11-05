@@ -18,7 +18,12 @@ def get_booking(db: Session, booking_id: int) -> Booking:
 
 
 def get_all_bookings(db: Session) -> list[Booking]:
-    return db.query(Booking).all()
+    return db.query(Booking).options(
+        joinedload(Booking.user),
+        joinedload(Booking.room),
+        joinedload(Booking.room).joinedload(Room.reviews),
+        joinedload(Booking.room).joinedload(Room.reviews).joinedload(Review.user)
+    ).all()
 
 
 def get_bookings_by_user_id(db: Session, user_id: int) -> list[Booking]:
