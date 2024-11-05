@@ -2,27 +2,18 @@ from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
 from sqlalchemy.orm import joinedload
 
-from schema import HotelCreate
+from database.model.room import Room
+from schema import HotelBase
 from database.model.user import User
 from .hotel import Hotel
 
 
-def create_hotel(db: Session, hotel: HotelCreate):
+def create_hotel(db: Session, hotel: HotelBase) -> Hotel:
     db_hotel = Hotel(name=hotel.name, address=hotel.address, user_id=hotel.user_id)
     db.add(db_hotel)
     db.commit()
     db.refresh(db_hotel)
-
-    # Retrieve the user to include in the response
-    db_user = db.query(User).filter(User.id == hotel.user_id).first()
-
-    return {
-        "id": db_hotel.id,
-        "name": db_hotel.name,
-        "address": db_hotel.address,
-        "user": db_user,  # Make sure user is included
-        "rooms": []  # Initialize with an empty list or fetch related rooms if needed
-    }
+    return db_hotel
 
 
 def get_hotel(db: Session, hotel_id: int):
@@ -36,14 +27,26 @@ def get_all_hotels(db: Session):
     # hotels =  db.query(Hotel).all()
     hotels = db.query(Hotel).options(
         joinedload(Hotel.user),  # Eager load the user relationship
-        joinedload(Hotel.rooms)  # Eager load the rooms relationship
+        joinedload(Hotel.rooms),  # Eager load the rooms relationship
+        joinedload(Hotel.rooms).joinedload(Room.reviews)  # Eager load the reviews relationship
     ).all()
     if not hotels:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Hotel not found.")
     return hotels
 
 
-def update_hotel(db: Session, hotel_id: int, hotel: HotelCreate):
+def get_hotels_by_user_id(db: Session, user_id: int):
+    hotels = db.query(Hotel).options(
+        joinedload(Hotel.user),  # Eager load the user relationship
+        joinedload(Hotel.rooms),  # Eager load the rooms relationship
+        joinedload(Hotel.rooms).joinedload(Room.reviews)  # Eager load the reviews relationship
+    ).filter(Hotel.user_id == user_id).all()
+    if not hotels:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Hotel not found.")
+    return hotels
+
+
+def update_hotel(db: Session, hotel_id: int, hotel: HotelBase):
     db_hotel = get_hotel(db, hotel_id)
     if db_hotel:
         db_hotel.name = hotel.name  # type: ignore
