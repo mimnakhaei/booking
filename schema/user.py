@@ -2,17 +2,17 @@ from pydantic import BaseModel, EmailStr, root_validator
 from typing import List
 
 
-class UserBase(BaseModel):
+class UserMeta(BaseModel):
     username: str
     email: EmailStr
 
 
-class UserCreate(UserBase):
+class UserBase(UserMeta):
     password: str
 
 
 # It's the same as UserCreate, but it's used for signup
-class UserSignup(UserCreate):
+class UserSignup(UserBase):
     pass
 
 

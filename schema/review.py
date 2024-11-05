@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from datetime import datetime
-from .user import UserBase
+from .user import UserMeta
 
 
 class ReviewBase(BaseModel):
@@ -15,7 +15,7 @@ class ReviewCreate(ReviewBase):
 
 class ReviewDisplay(ReviewBase):
     id: int
-    user: UserBase
+    user: UserMeta
 
     class Config:
         orm_mode = True
