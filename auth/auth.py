@@ -68,3 +68,46 @@ def authenticate(required_role: Role | None = None):
 
         return user
     return role_checker
+
+
+# /app/middleware/auth.py
+
+from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel
+from database.model.user import User, create_user, get_user  # Ensure these functions are defined
+from passlib.context import CryptContext
+
+router = APIRouter()
+
+# Password hashing utility
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+# Define a User Sign-Up schema
+class UserSignup(BaseModel):
+    username: str
+    password: str
+    email: str
+
+# Hash the password
+def hash_password(password: str):
+    return pwd_context.hash(password)
+
+# Sign-Up endpoint
+@router.post("/signup")
+async def signup(user_data: UserSignup):
+    # Check if the user already exists
+    if get_user(username=user_data.username):
+        raise HTTPException(status_code=400, detail="Username already exists")
+
+    # Create new user with hashed password
+    new_user = User(
+        username=user_data.username,
+        password=hash_password(user_data.password),  # Hash the password before saving
+        email=user_data.email,
+        role="normal"  # Default role for new users
+    )
+
+    # Save the new user in the database
+    create_user(new_user)
+    return {"message": "User created successfully"}
+
