@@ -36,7 +36,8 @@ def get_all_hotels(db: Session):
     # hotels =  db.query(Hotel).all()
     hotels = db.query(Hotel).options(
         joinedload(Hotel.user),  # Eager load the user relationship
-        joinedload(Hotel.rooms)  # Eager load the rooms relationship
+        joinedload(Hotel.rooms),  # Eager load the rooms relationship
+        joinedload(Hotel.rooms).joinedload(Hotel.reviews)  # Eager load the reviews relationship
     ).all()
     if not hotels:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Hotel not found.")
